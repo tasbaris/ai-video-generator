@@ -36,7 +36,7 @@ function App() {
         try {
           const res = await axios.get(`${API_BASE_URL}/status/${storyId}`);
           setVideoData(res.data);
-          
+
           if (res.data.status === 'completed') {
             setIsGenerating(false);
             clearInterval(interval);
@@ -47,7 +47,7 @@ function App() {
         }
       }, 2000);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -56,15 +56,15 @@ function App() {
   const handleGenerate = async (e) => {
     e.preventDefault();
     if (!topic.trim()) return;
-    
+
     setIsGenerating(true);
     setVideoData(null);
     setError('');
-    
+
     try {
-      const res = await axios.post(`${API_BASE_URL}/generate`, { 
+      const res = await axios.post(`${API_BASE_URL}/generate`, {
         topic,
-        story_type: storyType 
+        story_type: storyType
       });
       setStoryId(res.data.story_id);
       fetchHistory(); // Add to history immediately (as processing)
@@ -93,7 +93,7 @@ function App() {
   const handleDelete = async (e, id) => {
     e.stopPropagation(); // Butona tıklandığında hikayeyi seçme
     if (!window.confirm("Bu hikayeyi silmek istediğinize emin misiniz?")) return;
-    
+
     try {
       await axios.delete(`${API_BASE_URL}/stories/${id}`);
       if (storyId === id) {
@@ -115,7 +115,7 @@ function App() {
   return (
     <div className="flex h-screen bg-white font-sans text-gray-900 overflow-hidden">
       {/* Mobile Menu Toggle */}
-      <button 
+      <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow-md"
       >
@@ -125,7 +125,7 @@ function App() {
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-72' : 'w-0'} lg:w-72 bg-gray-900 h-full flex flex-col transition-all duration-300 z-40 overflow-hidden`}>
         <div className="p-4">
-          <button 
+          <button
             onClick={startNew}
             className="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-900/20"
           >
@@ -143,9 +143,8 @@ function App() {
             <div key={item.id} className="group relative">
               <button
                 onClick={() => selectStory(item.id)}
-                className={`w-full text-left px-3 py-3 rounded-xl transition-all flex items-start gap-3 ${
-                  storyId === item.id ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
-                }`}
+                className={`w-full text-left px-3 py-3 rounded-xl transition-all flex items-start gap-3 ${storyId === item.id ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                  }`}
               >
                 <MessageSquare size={18} className="mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0 pr-6">
@@ -184,7 +183,7 @@ function App() {
               <p className="text-lg text-gray-600 mb-10 leading-relaxed">
                 Konuyu yaz, görselleri, hikayeyi ve sesi yapay zeka senin için hazırlasın.
               </p>
-              
+
               <form onSubmit={handleGenerate} className="space-y-4">
                 <div className="flex flex-col md:flex-row gap-4">
                   <select
@@ -198,6 +197,7 @@ function App() {
                     <option value="Çocuk">Çocuk</option>
                     <option value="Korku">Korku</option>
                     <option value="Bilim Kurgu">Bilim Kurgu</option>
+                    <option value="Tarih">Tarih</option>
                   </select>
                   <div className="relative flex-1 group">
                     <input
@@ -226,17 +226,16 @@ function App() {
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 mb-2">{videoData?.topic}</h2>
                   <div className="flex items-center gap-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                      videoData?.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${videoData?.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                      }`}>
                       {videoData?.status === 'completed' ? 'Tamamlandı' : 'Üretiliyor...'}
                     </span>
                     <span className="text-gray-400 text-sm">ID: #{videoData?.id}</span>
                   </div>
                 </div>
                 {videoData?.status === 'completed' && (
-                  <a 
-                    href={`http://localhost:8000${videoData.video_url}`} 
+                  <a
+                    href={`http://localhost:8000${videoData.video_url}`}
                     download
                     className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 hover:border-blue-500 hover:text-blue-600 rounded-xl font-bold transition-all"
                   >
@@ -251,9 +250,9 @@ function App() {
                 <div className="lg:col-span-2">
                   <div className="aspect-[9/16] bg-black rounded-3xl overflow-hidden shadow-2xl ring-1 ring-gray-200 relative group">
                     {videoData?.status === 'completed' && videoData.video_url ? (
-                      <video 
-                        src={`http://localhost:8000${videoData.video_url}`} 
-                        controls 
+                      <video
+                        src={`http://localhost:8000${videoData.video_url}`}
+                        controls
                         className="w-full h-full object-cover"
                       />
                     ) : (
