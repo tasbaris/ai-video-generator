@@ -1,0 +1,16 @@
+# OS specific
+.DS_Store
+.DS_Store?
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+*.db
+
+# Node
+node_modules/
+
+# Project specific
+backend/media/
