@@ -24,17 +24,30 @@ def create_video_with_effects(image_paths, audio_path, srt_path, output_mp4):
     # 2. Görseller
     clips = []
     num_images = len(image_paths)
-    duration_per_image = duration / num_images if num_images > 0 else 5
     
-    for img_path in image_paths:
+    if num_images == 0:
+        raise Exception("Görsel bulunamadı!")
+
+    # Geçiş efekti (crossfade) için her görselin süresini biraz uzatıyoruz
+    # Toplam süre = (Her görselin süresi * N) - (Geçiş sayısı * Geçiş süresi)
+    transition_duration = 1.0 # 1 saniyelik geçiş
+    if num_images > 1:
+        duration_per_image = (duration + (num_images - 1) * transition_duration) / num_images
+    else:
+        duration_per_image = duration
+    
+    for i, img_path in enumerate(image_paths):
         if os.path.exists(img_path):
             clip = ImageClip(img_path).set_duration(duration_per_image)
+            if i > 0:
+                clip = clip.crossfadein(transition_duration)
             clips.append(clip)
             
     if not clips:
         raise Exception("Görsel bulunamadı!")
         
-    base_video = concatenate_videoclips(clips, method="compose")
+    # padding=-transition_duration sayesinde klipler birbirinin üzerine biner
+    base_video = concatenate_videoclips(clips, method="compose", padding=-transition_duration if num_images > 1 else 0)
     base_video = base_video.set_audio(final_audio)
     
     # 3. Geçici Ana Videoyu Çıkart (Sadece Görüntü + Ses)
