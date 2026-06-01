@@ -2,6 +2,10 @@ import requests
 import random
 import time
 import base64
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def download_image(prompt: str, save_path: str) -> str:
     # Çok uzun promptları kırpıyoruz
@@ -11,7 +15,7 @@ def download_image(prompt: str, save_path: str) -> str:
     max_retries = 5
     
     # Pollinations API Key ve Header ayarları
-    api_key = "YOUR_POLLINATIONS_API_KEY"
+    api_key = os.getenv("POLLINATIONS_API_KEY")
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}"

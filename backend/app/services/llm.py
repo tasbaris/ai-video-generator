@@ -1,9 +1,12 @@
 import os
 import json
 import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Mevcut API anahtarın
-API_KEY = "YOUR_GEMINI_API_KEY"
+API_KEY = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=API_KEY)
 
 def generate_story_and_prompts(topic: str, story_type: str = "Genel") -> dict:
