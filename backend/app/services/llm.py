@@ -9,7 +9,7 @@ load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=API_KEY)
 
-def generate_story_and_prompts(topic: str, story_type: str = "Genel") -> dict:
+def generate_story_and_prompts(topic: str, story_type: str = "Genel", image_count: int = 5) -> dict:
     model = genai.GenerativeModel('gemini-3.1-flash-lite')
     
     prompt = f"""
@@ -19,7 +19,7 @@ def generate_story_and_prompts(topic: str, story_type: str = "Genel") -> dict:
     
     Görevlerin:
     1. Yaklaşık 120-150 kelimelik, sürükleyici, Türkçe bir hikaye yaz. Hikaye {story_type} tonunda olmalıdır.
-    2. Bu hikaye için tam 5 adet görsel promptu oluştur. 
+    2. Bu hikaye için tam {image_count} adet görsel promptu oluştur. 
     
     GÖRSEL TALİMATI: Promptlar İNGİLİZCE olmalı ve çok detaylı yazılmalıdır. Türüne göre şu stilleri KESİNLİKLE kullan:
     - Tür "Korku" ise: "Highly detailed photorealistic, dark, eerie, scary, cinematic lighting, horror movie scene..."
@@ -32,10 +32,7 @@ def generate_story_and_prompts(topic: str, story_type: str = "Genel") -> dict:
         "story": "Hikaye metni...",
         "prompts": [
             "Scene 1 detailed English prompt...", 
-            "Scene 2 detailed English prompt...", 
-            "Scene 3 detailed English prompt...", 
-            "Scene 4 detailed English prompt...",
-            "Scene 5 detailed English prompt..."
+            ... (tam {image_count} adet olacak)
         ]
     }}
     """

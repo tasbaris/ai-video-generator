@@ -1,22 +1,27 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, Video, FileText, Download, Plus, History, MessageSquare, Menu, X, Trash2 } from 'lucide-react';
+import { Loader2, Video, FileText, Download, Plus, History, MessageSquare, Menu, X, Trash2, TrendingUp, RefreshCw } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
 function App() {
   const [topic, setTopic] = useState('');
   const [storyType, setStoryType] = useState('Genel');
+  const [imageCount, setImageCount] = useState(5);
+  const [includeBgMusic, setIncludeBgMusic] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [storyId, setStoryId] = useState(null);
   const [videoData, setVideoData] = useState(null);
   const [error, setError] = useState('');
   const [history, setHistory] = useState([]);
+  const [trends, setTrends] = useState([]);
+  const [isLoadingTrends, setIsLoadingTrends] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Fetch history on mount
+  // Fetch history and trends on mount
   useEffect(() => {
     fetchHistory();
+    fetchTrends();
   }, []);
 
   const fetchHistory = async () => {
@@ -25,6 +30,18 @@ function App() {
       setHistory(res.data);
     } catch (err) {
       console.error("Geçmiş yüklenirken hata:", err);
+    }
+  };
+
+  const fetchTrends = async () => {
+    setIsLoadingTrends(true);
+    try {
+      const res = await axios.get(`${API_BASE_URL}/trends`);
+      setTrends(res.data.trends);
+    } catch (err) {
+      console.error("Trendler yüklenirken hata:", err);
+    } finally {
+      setIsLoadingTrends(false);
     }
   };
 
@@ -64,7 +81,9 @@ function App() {
     try {
       const res = await axios.post(`${API_BASE_URL}/generate`, {
         topic,
-        story_type: storyType
+        story_type: storyType,
+        image_count: imageCount,
+        include_bg_music: includeBgMusic
       });
       setStoryId(res.data.story_id);
       fetchHistory(); // Add to history immediately (as processing)
@@ -184,39 +203,107 @@ function App() {
                 Konuyu yaz, görselleri, hikayeyi ve sesi yapay zeka senin için hazırlasın.
               </p>
 
-              <form onSubmit={handleGenerate} className="space-y-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <select
-                    value={storyType}
-                    onChange={(e) => setStoryType(e.target.value)}
-                    className="px-4 py-5 bg-white border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-gray-700 md:w-48"
-                    disabled={isGenerating}
-                  >
-                    <option value="Genel">Genel</option>
-                    <option value="Belgesel">Belgesel</option>
-                    <option value="Çocuk">Çocuk</option>
-                    <option value="Korku">Korku</option>
-                    <option value="Bilim Kurgu">Bilim Kurgu</option>
-                    <option value="Tarih">Tarih</option>
-                  </select>
-                  <div className="relative flex-1 group">
-                    <input
-                      type="text"
-                      value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
-                      placeholder="Videonun konusu ne olsun?"
-                      className="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all text-lg shadow-sm group-hover:shadow-md pr-32"
-                    />
-                    <button
-                      type="submit"
-                      disabled={isGenerating || !topic.trim()}
-                      className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl font-bold transition-all disabled:opacity-50 flex items-center gap-2"
+              <form onSubmit={handleGenerate} className="space-y-6">
+                <div className="flex flex-wrap gap-4 justify-center">
+                  <div className="flex flex-col items-start gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase ml-2">Tür</label>
+                    <select
+                      value={storyType}
+                      onChange={(e) => setStoryType(e.target.value)}
+                      className="px-4 py-3 bg-white border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-gray-700 w-40"
+                      disabled={isGenerating}
                     >
-                      {isGenerating ? <Loader2 className="animate-spin" size={20} /> : 'Üret'}
-                    </button>
+                      <option value="Genel">Genel</option>
+                      <option value="Belgesel">Belgesel</option>
+                      <option value="Çocuk">Çocuk</option>
+                      <option value="Korku">Korku</option>
+                      <option value="Bilim Kurgu">Bilim Kurgu</option>
+                      <option value="Tarih">Tarih</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col items-start gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase ml-2">Resim Adeti</label>
+                    <select
+                      value={imageCount}
+                      onChange={(e) => setImageCount(parseInt(e.target.value))}
+                      className="px-4 py-3 bg-white border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-gray-700 w-32"
+                      disabled={isGenerating}
+                    >
+                      {[3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                        <option key={n} value={n}>{n} Resim</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col items-start gap-1">
+                    <label className="text-xs font-bold text-gray-500 uppercase ml-2">Müzik</label>
+                    <div
+                      onClick={() => !isGenerating && setIncludeBgMusic(!includeBgMusic)}
+                      className={`flex items-center gap-3 px-4 py-3 bg-white border-2 rounded-2xl cursor-pointer transition-all ${includeBgMusic ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                        } ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${includeBgMusic ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
+                        }`}>
+                        {includeBgMusic && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                      </div>
+                      <span className={`font-bold text-sm ${includeBgMusic ? 'text-blue-700' : 'text-gray-500'}`}>
+                        {includeBgMusic ? 'Açık' : 'Kapalı'}
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                <div className="relative group max-w-2xl mx-auto w-full">
+                  <input
+                    type="text"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    placeholder="Videonun konusu ne olsun?"
+                    className="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all text-lg shadow-sm group-hover:shadow-md pr-32"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isGenerating || !topic.trim()}
+                    className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl font-bold transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {isGenerating ? <Loader2 className="animate-spin" size={20} /> : 'Üret'}
+                  </button>
+                </div>
               </form>
+
+              {/* Trends Section */}
+              <div className="mt-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2 text-gray-900 font-bold">
+                    <TrendingUp size={18} className="text-blue-600" />
+                    Google Trendler (Türkiye)
+                  </div>
+                  <button 
+                    onClick={fetchTrends} 
+                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 font-semibold"
+                    disabled={isLoadingTrends}
+                  >
+                    <RefreshCw size={14} className={isLoadingTrends ? 'animate-spin' : ''} />
+                    Yenile
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {trends.map((trend, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setTopic(trend)}
+                      className="px-4 py-2 bg-white border border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-700 rounded-full text-sm font-medium transition-all shadow-sm"
+                    >
+                      {trend}
+                    </button>
+                  ))}
+                  {trends.length === 0 && !isLoadingTrends && (
+                    <p className="text-gray-400 text-sm italic">Trendler şu an yüklenemedi.</p>
+                  )}
+                </div>
+              </div>
+
               {error && <p className="text-red-500 mt-4 font-medium">{error}</p>}
             </div>
           ) : (

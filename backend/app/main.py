@@ -20,6 +20,7 @@ from .services.llm import generate_story_and_prompts
 from .services.image import download_image
 from .services.tts import generate_audio_and_subs
 from .services.video import create_video_with_effects
+from .services.trends import get_trending_topics
 
 # Veritabanı tablolarını oluştur
 Base.metadata.create_all(bind=engine)
@@ -39,9 +40,14 @@ app.add_middleware(
 os.makedirs("media", exist_ok=True)
 app.mount("/media", StaticFiles(directory="media"), name="media")
 
+from typing import List
+
 class VideoRequest(BaseModel):
     topic: str
     story_type: str = "Genel"
+    image_count: int = 5
+    include_bg_music: bool = True
+    tags: List[str] = []
 
 def download_bg_music(story_type: str, output_path: str):
     """
@@ -77,13 +83,18 @@ def download_bg_music(story_type: str, output_path: str):
     except Exception as e:
         print(f"Müzik indirme atlandı/hata verdi: {e}")
 
-def process_video_task(topic: str, story_type: str, db: Session, story_id: int):
+def process_video_task(topic: str, story_type: str, db: Session, story_id: int, image_count: int = 5, include_bg_music: bool = True, tags: List[str] = []):
     """
     Arka planda çalışacak ana video üretim orkestrasyonu
     """
     try:
         # 1. Hikaye ve Prompt Üretimi
-        llm_result = generate_story_and_prompts(topic, story_type)
+        # Tag'leri konuya dahil et
+        full_topic = topic
+        if tags:
+            full_topic += " (Etiketler: " + ", ".join(tags) + ")"
+            
+        llm_result = generate_story_and_prompts(full_topic, story_type, image_count)
         story_text = llm_result["story"]
         prompts = llm_result["prompts"]
         
@@ -114,9 +125,13 @@ def process_video_task(topic: str, story_type: str, db: Session, story_id: int):
 
             image_task = asyncio.to_thread(download_all)
             tts_task = generate_audio_and_subs(story_text, audio_path, srt_path)
-            music_task = asyncio.to_thread(download_bg_music, story_type, bg_music_path)
+            
+            tasks = [image_task, tts_task]
+            if include_bg_music:
+                music_task = asyncio.to_thread(download_bg_music, story_type, bg_music_path)
+                tasks.append(music_task)
 
-            await asyncio.gather(image_task, tts_task, music_task)
+            await asyncio.gather(*tasks)
 
         # Mevcut event loop yönetimi
         try:
@@ -150,7 +165,15 @@ def generate_video(request: VideoRequest, background_tasks: BackgroundTasks, db:
     db.commit()
     db.refresh(new_story)
     
-    background_tasks.add_task(process_video_task, request.topic, request.story_type, db, new_story.id)
+    background_tasks.add_task(
+        process_video_task, 
+        request.topic, 
+        request.story_type, 
+        db, 
+        new_story.id, 
+        request.image_count, 
+        request.include_bg_music
+    )
     
     return {"message": "Video üretimi başlatıldı", "story_id": new_story.id}
 
@@ -161,6 +184,14 @@ def get_stories(db: Session = Depends(get_db)):
     """
     stories = db.query(Story).order_by(Story.id.desc()).all()
     return stories
+
+@app.get("/api/trends")
+def get_trends():
+    """
+    Google Trends'ten popüler konuları getirir.
+    """
+    trends = get_trending_topics()
+    return {"trends": trends}
 
 @app.delete("/api/stories/{story_id}")
 def delete_story(story_id: int, db: Session = Depends(get_db)):

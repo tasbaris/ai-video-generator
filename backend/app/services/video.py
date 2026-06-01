@@ -65,8 +65,8 @@ def create_video_with_effects(image_paths, audio_path, srt_path, output_mp4):
         
         ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
         
-        # FontSize 14'e düştü, MarginV 60 ile ekranın altına çekildi    
-        force_style = "FontName=Arial,FontSize=14,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=1.5,Shadow=0.5,Alignment=2,MarginV=40"      
+        # Daha modern, sarı ve kalın altyazı stili (TikTok/Reels tarzı)
+        force_style = "FontName=Arial,FontSize=32,Bold=1,PrimaryColour=&H0000FFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=3,Shadow=0,Alignment=2,MarginV=80"      
         cmd = [
             ffmpeg_exe, "-y",
             "-i", temp_base,
