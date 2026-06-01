@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, Video, FileText, Download, Plus, History, MessageSquare, Menu, X, Trash2, TrendingUp, RefreshCw } from 'lucide-react';
+import { Loader2, Video, FileText, Download, Plus, History, MessageSquare, Menu, X, Trash2, TrendingUp, RefreshCw, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = 'http://localhost:8000/api';
@@ -18,12 +18,26 @@ function App() {
   const [trends, setTrends] = useState([]);
   const [isLoadingTrends, setIsLoadingTrends] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [imageQuota, setImageQuota] = useState(null);
 
   // Fetch history and trends on mount
   useEffect(() => {
     fetchHistory();
     fetchTrends();
+    fetchBalance();
   }, []);
+
+  const fetchBalance = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/balance`);
+      // 1 resim = 0.001 pollen. Bakiye / 0.001 = kalan resim hakkı
+      const pollen = res.data.balance || 0;
+      const imagesLeft = Math.floor(pollen / 0.001);
+      setImageQuota(imagesLeft);
+    } catch (err) {
+      console.error("Bakiye yüklenirken hata:", err);
+    }
+  };
 
   const fetchHistory = async () => {
     try {
@@ -68,6 +82,7 @@ function App() {
             setIsGenerating(false);
             clearInterval(interval);
             fetchHistory(); // Refresh history when a video is done
+            fetchBalance(); // Kalan hakkı güncelle
           }
         } catch (err) {
           console.error("Durum kontrol hatası:", err);
@@ -222,6 +237,25 @@ function App() {
             </div>
           )}
         </div>
+
+        {/* Quota Tracker */}
+        {imageQuota !== null && (
+          <div className="p-5 border-t border-gray-800 bg-gray-900/80 shrink-0">
+            <div className="flex justify-between items-center text-xs font-bold text-gray-400 mb-3">
+              <span className="flex items-center gap-2"><Camera size={14} className="text-blue-500"/> Saatlik Resim Kotası</span>
+              <span className={imageQuota < 20 ? 'text-red-400' : 'text-blue-400'}>{imageQuota} / 150</span>
+            </div>
+            <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden shadow-inner">
+              <div 
+                className={`h-full transition-all duration-1000 ease-out ${imageQuota < 20 ? 'bg-red-500' : 'bg-blue-500'}`} 
+                style={{ width: `${Math.min(Math.max((imageQuota / 150) * 100, 0), 100)}%` }}
+              ></div>
+            </div>
+            <p className="text-[10px] text-gray-500 mt-3 text-center flex items-center justify-center gap-1">
+              <RefreshCw size={10} className="opacity-70" /> Her saat başı otomatik yenilenir
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Custom Delete Modal */}
@@ -285,7 +319,7 @@ function App() {
               <form onSubmit={handleGenerate} className="space-y-6">
                 <div className="flex flex-wrap gap-4 justify-center">
                   <div className="flex flex-col items-start gap-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-2">Tür</label>
+                    <label className="text-xs font-bold text-gray-500 ml-2">Tür</label>
                     <select
                       value={storyType}
                       onChange={(e) => setStoryType(e.target.value)}
@@ -297,6 +331,7 @@ function App() {
                       <option value="Çocuk">Çocuk</option>
                       <option value="Korku">Korku</option>
                       <option value="Bilim Kurgu">Bilim Kurgu</option>
+                      <option value="Futbol">Futbol</option>
                       <option value="Tarih">Tarih</option>
                       <option value="Televizyon">Televizyon</option>
                       <option value="Teknoloji">Teknoloji</option>
@@ -305,7 +340,7 @@ function App() {
                   </div>
 
                   <div className="flex flex-col items-start gap-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-2">Resim Adeti</label>
+                    <label className="text-xs font-bold text-gray-500 ml-2">Resim Adeti</label>
                     <select
                       value={imageCount}
                       onChange={(e) => setImageCount(parseInt(e.target.value))}
@@ -319,7 +354,7 @@ function App() {
                   </div>
 
                   <div className="flex flex-col items-start gap-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-2">Müzik</label>
+                    <label className="text-xs font-bold text-gray-500 ml-2">Arkplan Müziği</label>
                     <div
                       onClick={() => !isGenerating && setIncludeBgMusic(!includeBgMusic)}
                       className={`flex items-center gap-3 px-4 py-3 bg-white border-2 rounded-2xl cursor-pointer transition-all ${includeBgMusic ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
@@ -329,28 +364,47 @@ function App() {
                         }`}>
                         {includeBgMusic && <div className="w-2 h-2 bg-white rounded-full"></div>}
                       </div>
-                      <span className={`font-bold text-sm ${includeBgMusic ? 'text-blue-700' : 'text-gray-500'}`}>
+                      <span className={`font-bold text-sm w-12 text-left inline-block ${includeBgMusic ? 'text-blue-700' : 'text-gray-500'}`}>
                         {includeBgMusic ? 'Açık' : 'Kapalı'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="relative group max-w-2xl mx-auto w-full">
-                  <input
-                    type="text"
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                    placeholder="Videonun konusu ne olsun?"
-                    className="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all text-lg shadow-sm group-hover:shadow-md pr-32"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isGenerating || !topic.trim()}
-                    className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl font-bold transition-all disabled:opacity-50 flex items-center gap-2"
-                  >
-                    {isGenerating ? <Loader2 className="animate-spin" size={20} /> : 'Üret'}
-                  </button>
+                <div className="max-w-2xl mx-auto w-full">
+                  <div className="flex justify-start mb-2 h-6 pl-2">
+                    <AnimatePresence>
+                      {topic && !isGenerating && (
+                        <motion.button
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          transition={{ duration: 0.2 }}
+                          type="button"
+                          onClick={() => setTopic('')}
+                          className="text-xs font-bold text-gray-400 hover:text-red-500 flex items-center gap-1.5 px-2 py-1 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <X size={14} /> Metni Temizle
+                        </motion.button>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  <div className="relative group w-full">
+                    <input
+                      type="text"
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      placeholder="Videonun konusu ne olsun?"
+                      className="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all text-lg shadow-sm group-hover:shadow-md pr-32"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isGenerating || !topic.trim()}
+                      className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl font-bold transition-all disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {isGenerating ? <Loader2 className="animate-spin" size={20} /> : 'Üret'}
+                    </button>
+                  </div>
                 </div>
               </form>
 

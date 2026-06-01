@@ -187,6 +187,33 @@ def get_trends(story_type: str = "Genel"):
     trends = get_trending_topics(category=story_type)
     return {"trends": trends}
 
+@app.get("/api/balance")
+def get_balance():
+    """
+    Pollinations hesabının güncel bakiye (Pollen) bilgisini döner.
+    """
+    import requests
+    import os
+    
+    api_key = os.getenv("POLLINATIONS_API_KEY")
+    if not api_key:
+        return {"balance": 0}
+        
+    try:
+        res = requests.get(
+            "https://gen.pollinations.ai/account/balance",
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=5
+        )
+        if res.status_code == 200:
+            return {"balance": res.json().get("balance", 0)}
+        else:
+            print(f"Bakiye okuma hatası: {res.text}")
+            return {"balance": 0}
+    except Exception as e:
+        print(f"Bakiye servisine erişilemedi: {e}")
+        return {"balance": 0}
+
 @app.delete("/api/stories/{story_id}")
 def delete_story(story_id: int, db: Session = Depends(get_db)):
     """
