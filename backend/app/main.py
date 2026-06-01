@@ -47,7 +47,6 @@ class VideoRequest(BaseModel):
     story_type: str = "Genel"
     image_count: int = 5
     include_bg_music: bool = True
-    tags: List[str] = []
 
 def download_bg_music(story_type: str, output_path: str):
     """
@@ -83,18 +82,13 @@ def download_bg_music(story_type: str, output_path: str):
     except Exception as e:
         print(f"Müzik indirme atlandı/hata verdi: {e}")
 
-def process_video_task(topic: str, story_type: str, db: Session, story_id: int, image_count: int = 5, include_bg_music: bool = True, tags: List[str] = []):
+def process_video_task(topic: str, story_type: str, db: Session, story_id: int, image_count: int = 5, include_bg_music: bool = True):
     """
     Arka planda çalışacak ana video üretim orkestrasyonu
     """
     try:
         # 1. Hikaye ve Prompt Üretimi
-        # Tag'leri konuya dahil et
-        full_topic = topic
-        if tags:
-            full_topic += " (Etiketler: " + ", ".join(tags) + ")"
-            
-        llm_result = generate_story_and_prompts(full_topic, story_type, image_count)
+        llm_result = generate_story_and_prompts(topic, story_type, image_count)
         story_text = llm_result["story"]
         prompts = llm_result["prompts"]
         
@@ -186,11 +180,11 @@ def get_stories(db: Session = Depends(get_db)):
     return stories
 
 @app.get("/api/trends")
-def get_trends():
+def get_trends(story_type: str = "Genel"):
     """
-    Google Trends'ten popüler konuları getirir.
+    Google Trends'ten veya Haberler'den kategoriye göre popüler konuları getirir.
     """
-    trends = get_trending_topics()
+    trends = get_trending_topics(category=story_type)
     return {"trends": trends}
 
 @app.delete("/api/stories/{story_id}")

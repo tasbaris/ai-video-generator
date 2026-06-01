@@ -14,11 +14,11 @@ def generate_story_and_prompts(topic: str, story_type: str = "Genel", image_coun
     
     prompt = f"""
     Sen profesyonel bir senaristisin. 
-    Konu: {topic}
+    Ana Konu ve Unsurlar: {topic}
     Tür: {story_type}
     
     Görevlerin:
-    1. Yaklaşık 120-150 kelimelik, sürükleyici, Türkçe bir hikaye yaz. Hikaye {story_type} tonunda olmalıdır.
+    1. Belirtilen 'Ana Konu ve Unsurlar'ı kusursuzca harmanlayarak yaklaşık 120-150 kelimelik, sürükleyici, Türkçe bir hikaye yaz. Hikaye {story_type} tonunda olmalıdır. Sadece kelimeleri geçirme, onları hikayenin merkezine oturt.
     2. Bu hikaye için tam {image_count} adet görsel promptu oluştur. 
     
     GÖRSEL TALİMATI: Promptlar İNGİLİZCE olmalı ve çok detaylı yazılmalıdır. Türüne göre şu stilleri KESİNLİKLE kullan:

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Loader2, Video, FileText, Download, Plus, History, MessageSquare, Menu, X, Trash2, TrendingUp, RefreshCw } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
@@ -36,14 +37,23 @@ function App() {
   const fetchTrends = async () => {
     setIsLoadingTrends(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/trends`);
-      setTrends(res.data.trends);
+      const res = await axios.get(`${API_BASE_URL}/trends`, {
+        params: { story_type: storyType }
+      });
+      // Backend artık sadece "trends" dönüyor
+      setTrends(Array.isArray(res.data.trends) ? res.data.trends : []);
     } catch (err) {
       console.error("Trendler yüklenirken hata:", err);
+      setTrends([]);
     } finally {
       setIsLoadingTrends(false);
     }
   };
+
+  // Kategori (storyType) değiştiğinde trendleri yeniden çek
+  useEffect(() => {
+    fetchTrends();
+  }, [storyType]);
 
   // Polling for video status
   useEffect(() => {
@@ -109,19 +119,35 @@ function App() {
     }
   };
 
-  const handleDelete = async (e, id) => {
-    e.stopPropagation(); // Butona tıklandığında hikayeyi seçme
-    if (!window.confirm("Bu hikayeyi silmek istediğinize emin misiniz?")) return;
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [storyToDelete, setStoryToDelete] = useState(null);
+
+  const handleDeleteClick = (e, id) => {
+    e.stopPropagation();
+    setStoryToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!storyToDelete) return;
 
     try {
-      await axios.delete(`${API_BASE_URL}/stories/${id}`);
-      if (storyId === id) {
+      await axios.delete(`${API_BASE_URL}/stories/${storyToDelete}`);
+      if (storyId === storyToDelete) {
         startNew();
       }
       fetchHistory();
     } catch (err) {
       console.error("Silme hatası:", err);
+    } finally {
+      setDeleteModalOpen(false);
+      setStoryToDelete(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalOpen(false);
+    setStoryToDelete(null);
   };
 
   const startNew = () => {
@@ -158,28 +184,38 @@ function App() {
             <History size={14} />
             Geçmiş Videolar
           </div>
-          {history.map((item) => (
-            <div key={item.id} className="group relative">
-              <button
-                onClick={() => selectStory(item.id)}
-                className={`w-full text-left px-3 py-3 rounded-xl transition-all flex items-start gap-3 ${storyId === item.id ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
-                  }`}
+          <AnimatePresence mode="popLayout">
+            {history.map((item) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="group relative mb-1"
               >
-                <MessageSquare size={18} className="mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0 pr-6">
-                  <div className="text-sm font-medium truncate">{item.topic}</div>
-                  <div className="text-[10px] opacity-50 mt-1">ID: #{item.id}</div>
-                </div>
-              </button>
-              <button
-                onClick={(e) => handleDelete(e, item.id)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Sil"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ))}
+                <button
+                  onClick={() => selectStory(item.id)}
+                  className={`w-full text-left px-3 py-3 rounded-xl transition-all flex items-start gap-3 ${storyId === item.id ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                    }`}
+                >
+                  <MessageSquare size={18} className="mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0 pr-6">
+                    <div className="text-sm font-medium truncate">{item.topic}</div>
+                    <div className="text-[10px] opacity-50 mt-1">ID: #{item.id}</div>
+                  </div>
+                </button>
+                <button
+                  onClick={(e) => handleDeleteClick(e, item.id)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Sil"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
           {history.length === 0 && (
             <div className="text-center py-8 text-gray-600 text-sm">
               Henüz video üretilmedi.
@@ -187,6 +223,49 @@ function App() {
           )}
         </div>
       </div>
+
+      {/* Custom Delete Modal */}
+      <AnimatePresence>
+        {deleteModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full"
+            >
+              <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={32} />
+              </div>
+              <h3 className="text-xl font-bold text-center text-gray-900 mb-2">Emin misiniz?</h3>
+              <p className="text-center text-gray-500 mb-8">
+                Bu hikayeyi ve oluşturulan videoyu kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelDelete}
+                  className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-colors shadow-md shadow-red-200"
+                >
+                  Evet, Sil
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <div className="flex-1 h-full overflow-y-auto bg-gray-50 relative">
@@ -219,6 +298,9 @@ function App() {
                       <option value="Korku">Korku</option>
                       <option value="Bilim Kurgu">Bilim Kurgu</option>
                       <option value="Tarih">Tarih</option>
+                      <option value="Televizyon">Televizyon</option>
+                      <option value="Teknoloji">Teknoloji</option>
+                      <option value="Magazin">Magazin</option>
                     </select>
                   </div>
 
@@ -273,38 +355,57 @@ function App() {
               </form>
 
               {/* Trends Section */}
-              <div className="mt-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2 text-gray-900 font-bold">
-                    <TrendingUp size={18} className="text-blue-600" />
-                    Google Trendler (Türkiye)
+              <div className="mt-10 bg-white p-6 rounded-3xl border border-gray-200 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2 text-gray-900 font-bold text-lg text-left">
+                    <TrendingUp size={20} className="text-blue-600" />
+                    {storyType === 'Genel' ? 'Günün Trend Konuları (Türkiye)' : `${storyType} Gündemi`}
                   </div>
-                  <button 
-                    onClick={fetchTrends} 
-                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 font-semibold"
+                  <button
+                    onClick={(e) => { e.preventDefault(); fetchTrends(); }}
+                    className="group flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-lg text-xs font-bold transition-all border border-gray-100 hover:border-blue-100"
                     disabled={isLoadingTrends}
                   >
-                    <RefreshCw size={14} className={isLoadingTrends ? 'animate-spin' : ''} />
+                    <RefreshCw size={14} className={`${isLoadingTrends ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
                     Yenile
                   </button>
                 </div>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {trends.map((trend, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setTopic(trend)}
-                      className="px-4 py-2 bg-white border border-gray-200 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-700 rounded-full text-sm font-medium transition-all shadow-sm"
-                    >
-                      {trend}
-                    </button>
-                  ))}
-                  {trends.length === 0 && !isLoadingTrends && (
-                    <p className="text-gray-400 text-sm italic">Trendler şu an yüklenemedi.</p>
+
+                <div className="flex flex-wrap gap-3 justify-center">
+                  {Array.isArray(trends) && trends.length > 0 ? (
+                    trends.map((trend, idx) => {
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => setTopic(prev => prev ? `${prev}, ${trend}` : trend)}
+                          className="pl-3 pr-4 py-2.5 rounded-2xl text-sm font-bold transition-all flex items-center gap-2 border-2 bg-white border-gray-100 text-gray-600 hover:border-blue-400 hover:text-blue-600 hover:shadow-sm"
+                        >
+                          <span className="text-[10px] w-5 h-5 flex items-center justify-center rounded-full bg-gray-100 text-gray-400">
+                            {idx + 1}
+                          </span>
+                          {trend}
+                          <Plus size={16} className="ml-1 opacity-30 group-hover:opacity-100 transition-opacity" />
+                        </button>
+                      );
+                    })
+                  ) : (
+                    !isLoadingTrends && (
+                      <div className="text-center py-4 w-full">
+                        <p className="text-gray-400 text-sm italic">Şu an gösterilecek canlı trend bulunamadı.</p>
+                      </div>
+                    )
+                  )}
+                  {isLoadingTrends && (
+                    <div className="flex flex-wrap gap-3 justify-center w-full">
+                      {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="w-32 h-10 bg-gray-100 animate-pulse rounded-2xl"></div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>
 
-              {error && <p className="text-red-500 mt-4 font-medium">{error}</p>}
+              {error && <p className="text-red-500 mt-6 text-center font-medium bg-red-50 p-4 rounded-2xl border border-red-100">{error}</p>}
             </div>
           ) : (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
