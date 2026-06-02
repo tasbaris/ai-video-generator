@@ -1,4 +1,4 @@
-# 🎬 AI Video Generator (Pro)
+# 🎬 AI Video Generator
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005863?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -41,9 +41,33 @@
 
 ---
 
-## 🚀 Hızlı Kurulum
+## 🚀 Hızlı Başlatma (Quick Start)
+
+Projeyi en hızlı şekilde kurmak ve çalıştırmak için işletim sisteminize uygun scriptleri kullanabilirsiniz:
+
+### 💻 Windows Kullanıcıları
+1. **Kurulum:** `setup.bat` dosyasına çift tıklayın. (Sadece ilk seferde)
+2. **Çalıştır:** `start.bat` dosyasına çift tıklayın.
+
+### 🍎 Mac ve 🐧 Linux Kullanıcıları
+1. Terminalinizi açın ve proje dizinine gidin.
+2. **Kurulum:**
+   ```bash
+   ./setup.sh
+   ```
+3. **Çalıştır:**
+   ```bash
+   ./start.sh
+   ```
+
+---
+
+## 🛠️ Manuel Kurulum
+
+Eğer işlemleri adım adım yapmak isterseniz:
 
 ### 1. Backend Hazırlığı
+
 ```bash
 cd backend
 python3 -m venv venv
@@ -53,17 +77,20 @@ pip install -r requirements.txt
 
 **`.env` Dosyasını Yapılandırın:**
 `backend/` dizini içinde bir `.env` oluşturun:
+
 ```env
 GEMINI_API_KEY=AIzaSy...
 POLLINATIONS_API_KEY=sk_...
 ```
 
 **Çalıştır:**
+
 ```bash
 uvicorn app.main:app --reload
 ```
 
 ### 2. Frontend Hazırlığı
+
 ```bash
 cd frontend
 npm install
