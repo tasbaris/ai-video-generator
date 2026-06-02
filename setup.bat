@@ -4,6 +4,16 @@ echo ===========================================
 echo   AI Video Generator Kurulum Baslatiliyor
 echo ===========================================
 
+:: FFmpeg kontrolü
+where ffmpeg >nul 2>nul
+if %errorlevel% neq 0 (
+    echo.
+    echo [UYARI] FFmpeg sisteminizde bulunamadi. 
+    echo Video ve altyazi islemleri icin FFmpeg yuklemeniz onerilir.
+    echo Yuklemek icin: winget install ffmpeg
+    echo.
+)
+
 :: Backend kurulumu
 echo [1/2] Backend bagimliliklari yukleniyor...
 cd backend

@@ -60,6 +60,9 @@ Projeyi en hızlı şekilde kurmak ve çalıştırmak için işletim sisteminize
    ./start.sh
    ```
 
+> **Not (Windows Kullanıcıları için):** Video işleme ve altyazı gömme işlemleri için FFmpeg gereklidir. `setup.bat` bağımlılıkları yüklerken `imageio-ffmpeg` kütüphanesini kullanır, ancak sorun yaşarsanız FFmpeg'i manuel olarak indirip PATH'e eklemeniz gerekebilir. En kolay kurulum için PowerShell'e şu komutu yazabilirsiniz:
+> `winget install ffmpeg`
+
 ---
 
 ## 🛠️ Manuel Kurulum

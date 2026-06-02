@@ -89,6 +89,12 @@ def create_video_with_effects(image_paths, audio_path, srt_path, output_mp4):
         print("FFMPEG ile altyazı videoya gömülüyor...")
         
         temp_srt = "temp_sub.srt"
+        # Windows'ta FFMPEG subtitles filtresi dosya yolunda ':' karakterinden hoşlanmaz.
+        # Bu yüzden dosya yolunu escape ediyoruz.
+        abs_srt_path = os.path.abspath(temp_srt).replace("\\", "/")
+        if ":" in abs_srt_path:
+            abs_srt_path = abs_srt_path.replace(":", "\\:")
+            
         # Ses ile tam senkron olması için altyazıyı 250 milisaniye öne çekiyoruz
         shift_srt_time(srt_path, temp_srt, shift_ms=-250)
         
@@ -100,7 +106,7 @@ def create_video_with_effects(image_paths, audio_path, srt_path, output_mp4):
         cmd = [
             ffmpeg_exe, "-y",
             "-i", temp_base,
-            "-vf", f"subtitles={temp_srt}:force_style='{force_style}'",
+            "-vf", f"subtitles='{abs_srt_path}':force_style='{force_style}'",
             "-c:a", "copy",
             "-preset", "ultrafast",
             output_mp4
