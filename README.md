@@ -23,7 +23,6 @@
 
 ## 📸 Ekran Görüntüsü
 
-*(Buraya uygulamanın ekran görüntüsünü ekleyebilirsiniz)*
 ![App Preview](https://raw.githubusercontent.com/tasbaris/ai-video-generator/main/preview.jpeg)
 
 ---
