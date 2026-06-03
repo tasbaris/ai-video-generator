@@ -15,14 +15,15 @@ def get_trending_topics(region='TR', category='Genel'):
         else:
             # Belirli kategoriler için o anki güncel haberleri arayarak trend oluşturuyoruz
             queries = {
-                "Belgesel": "bilim OR doğa OR belgesel OR Vahşi Yaşam OR National Geographic OR Discovery OR BBC Earth",
+                "Belgesel": "doğa OR belgesel OR Vahşi Yaşam OR National Geographic OR Discovery OR BBC Earth",
+                "Siyaset": "siyaset OR seçim OR hükümet OR meclis OR cumhurbaşkanı OR parti",
+                "Eğitim": "eğitim OR okul OR üniversite OR öğretmen OR öğrenci OR sınav",
                 "Çocuk": "çizgi film OR animasyon OR oyuncak OR masal", # Eğitim/Bakanlık yerine eğlence odaklı
-                "Korku": "gizem OR korku OR gerilim OR paranormal",
-                "Bilim Kurgu": "uzaylı OR UFO OR galaksi OR uzay istasyonu OR astronomi",
+                "Korku": "gizem OR gerilim OR paranormal",
                 "Tarih": "tarih OR arkeoloji OR antik OR medeniyet OR savaş OR imparatorluk",
-                "Futbol": "futbol OR spor OR maç OR lig OR Dünya Kupası OR Şampiyonlar Ligi OR transfer",
+                "Spor": "futbol OR tenis OR spor OR lig OR Dünya Kupası OR Şampiyonlar Ligi OR transfer",
                 "Televizyon": "televizyon OR dizi OR sinema OR film OR tiyatro",
-                "Teknoloji": "teknoloji OR yapay zeka OR akıllı cihazlar OR mobil",
+                "Teknoloji": "teknoloji OR yapay zeka OR akıllı cihazlar OR mobil OR bilgisayar OR yazılım OR donanım",
                 "Magazin": "magazin OR ünlü OR dedikodu",
             }
             # Eğer eşleşmezse varsayılan bir kelime kullan
