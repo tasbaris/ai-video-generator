@@ -6,7 +6,7 @@
 [![Gemini](https://img.shields.io/badge/Google%20Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-**AI Video Generator**, sadece bir konu başlığı girerek dakikalar içinde profesyonel video klipler oluşturan, uçtan uca otonom bir içerik üretim platformudur. 
+**AI Video Generator**, sadece bir konu başlığı girerek dakikalar içinde profesyonel video klipler oluşturan, uçtan uca otonom bir içerik üretim platformudur.
 
 ---
 
@@ -24,7 +24,7 @@
 ## 📸 Ekran Görüntüsü
 
 *(Buraya uygulamanın ekran görüntüsünü ekleyebilirsiniz)*
-![App Preview](https://raw.githubusercontent.com/your-username/ai-video-generator/main/preview.png)
+![App Preview](https://raw.githubusercontent.com/tasbaris/ai-video-generator/main/preview.jpeg)
 
 ---
 
@@ -46,16 +46,21 @@
 Projeyi en hızlı şekilde kurmak ve çalıştırmak için işletim sisteminize uygun scriptleri kullanabilirsiniz:
 
 ### 💻 Windows Kullanıcıları
+
 1. **Kurulum:** `setup.bat` dosyasına çift tıklayın. (Sadece ilk seferde)
 2. **Çalıştır:** `start.bat` dosyasına çift tıklayın.
 
 ### 🍎 Mac ve 🐧 Linux Kullanıcıları
+
 1. Terminalinizi açın ve proje dizinine gidin.
 2. **Kurulum:**
+
    ```bash
    ./setup.sh
    ```
+
 3. **Çalıştır:**
+
    ```bash
    ./start.sh
    ```

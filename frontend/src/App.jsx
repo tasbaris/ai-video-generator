@@ -328,11 +328,12 @@ function App() {
                     >
                       <option value="Genel">Genel</option>
                       <option value="Belgesel">Belgesel</option>
+                      <option value="Siyaset">Siyaset</option>
+                      <option value="Eğitim">Eğitim</option>
                       <option value="Çocuk">Çocuk</option>
                       <option value="Korku">Korku</option>
-                      <option value="Bilim Kurgu">Bilim Kurgu</option>
-                      <option value="Futbol">Futbol</option>
                       <option value="Tarih">Tarih</option>
+                      <option value="Spor">Spor</option>
                       <option value="Televizyon">Televizyon</option>
                       <option value="Teknoloji">Teknoloji</option>
                       <option value="Magazin">Magazin</option>
