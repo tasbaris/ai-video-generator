@@ -71,6 +71,23 @@ Bu dosya, Trello board'unuza kolayca taşıyabilmeniz için genişletilmiş spri
 
 ---
 
+## 🔵 SPRINT 4: İleri Seviye Özellikler & UX (Advanced)
+**Hedef:** Projeyi profesyonel bir ürün seviyesine taşımak.
+
+### Story 8: Akıllı İçerik ve Trend Entegrasyonu (5 SP)
+- **Görevler:**
+  - [x] Google Trends API ile güncel Türkiye gündeminin çekilmesi.
+  - [x] Kategori bazlı (Spor, Magazin, Teknoloji vb.) trend filtreleme.
+- **Kabul Kriterleri:** Kullanıcı tek tıkla gündemdeki konuları video konusu olarak seçebilmeli.
+
+### Story 9: Otomatik Fon Müziği ve Paralelizasyon (5 SP)
+- **Görevler:**
+  - [x] yt-dlp ile YouTube üzerinden telifsiz enstrümantal müziklerin tespiti ve indirilmesi.
+  - [x] Python `asyncio` ve `concurrent.futures` ile görsel/ses/müzik hazırlığının paralel yürütülmesi.
+- **Kabul Kriterleri:** Video üretim hızı hissedilir şekilde artmalı ve her videoda türüne uygun fon müziği olmalı.
+
+---
+
 ## 📋 Trello İçin Kolon Önerisi
 1. **Backlog:** Henüz planlanmamış fikirler.
 2. **Sprint Backlog:** Mevcut sprintte yapılacaklar.
