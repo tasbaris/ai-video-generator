@@ -9,6 +9,7 @@ import asyncio
 import concurrent.futures
 import PIL.Image
 import yt_dlp
+import imageio_ffmpeg
 
 # moviepy ve Pillow 10+ uyumluluğu için yama (monkey patch)
 if not hasattr(PIL.Image, 'ANTIALIAS'):
@@ -66,6 +67,7 @@ def download_bg_music(story_type: str, output_path: str):
         # yt-dlp'nin kendi katı süre filtresi (210 saniyeden uzunları es geçer)
         'match_filter': yt_dlp.utils.match_filter_func("duration < 210"),
         'max_downloads': 1,
+        'ffmpeg_location': imageio_ffmpeg.get_ffmpeg_exe(),
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',

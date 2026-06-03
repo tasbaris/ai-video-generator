@@ -47,31 +47,3 @@ def generate_story_and_prompts(topic: str, story_type: str = "Genel", image_coun
         text = text[3:-3]
         
     return json.loads(text)
-
-
-from moviepy.editor import AudioFileClip, CompositeAudioClip
-import moviepy.audio.fx.all as afx
-import os
-
-# ... video.py içindeki diğer kodların ...
-
-def create_video_with_effects(image_paths, audio_path, srt_path, output_mp4):
-    # Ana sesi (TTS - Konuşma) yükle
-    tts_audio = AudioFileClip(audio_path)
-    
-    # ---------------- FON MÜZİĞİ KISMI ----------------
-    bg_music_path = "bg_music.mp3" # Ana dizine koyacağın müzik dosyası
-    
-    if os.path.exists(bg_music_path):
-        # Müziği yükle ve sesini %10'a kıs ki konuşmayı bastırmasın
-        bg_music = AudioFileClip(bg_music_path).fx(afx.volumex, 0.1)
-        
-        # Müzik videodan kısaysa döngüye al (loop), uzunsa videonun süresine göre kes
-        bg_music = afx.audio_loop(bg_music, duration=tts_audio.duration)
-        
-        # Konuşma sesi ile fon müziğini birleştir
-        final_audio = CompositeAudioClip([tts_audio, bg_music])
-    else:
-        # Müzik dosyası yoksa sadece konuşmayı kullan
-        final_audio = tts_audio
-        
