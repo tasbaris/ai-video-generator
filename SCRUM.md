@@ -13,7 +13,7 @@
 ### Product Backlog
 
 | ID | Story | Story Point | Durum |
-|----|-------|-------------|-------|
+| ---- | ------- | ------------- | ------- |
 | 1 | LLM’ile program içerisinden promt oluşturma | 3 | Tamamlandı |
 | 2 | Oluşan hikayenin veri tabanına kaydedilmesi | 2 | Tamamlandı |
 | 3 | Hikaye temelli en az 3 görselin LLM’ile oluşturulması | 3 | Tamamlandı |
