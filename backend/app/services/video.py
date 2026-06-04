@@ -88,7 +88,9 @@ def create_video_with_effects(image_paths, audio_path, srt_path, output_mp4):
     if os.path.exists(srt_path):
         print("FFMPEG ile altyazı videoya gömülüyor...")
         
-        temp_srt = "temp_sub.srt"
+        # Çakışmaları önlemek için her videoya özel geçici SRT ismi
+        temp_srt = output_mp4.replace(".mp4", "_temp.srt")
+        
         # Windows'ta FFMPEG subtitles filtresi dosya yolunda ':' karakterinden hoşlanmaz.
         # Bu yüzden dosya yolunu escape ediyoruz.
         abs_srt_path = os.path.abspath(temp_srt).replace("\\", "/")

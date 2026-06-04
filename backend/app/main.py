@@ -108,7 +108,9 @@ def process_video_task(topic: str, story_type: str, story_id: int, image_count: 
             db.commit()
             
         job_id = str(uuid.uuid4())
-        workspace_dir = os.path.abspath("media")
+        # Her hikaye için kendi ID'si ile bir alt klasör oluşturuyoruz
+        workspace_dir = os.path.join(os.path.abspath("media"), str(story_id))
+        os.makedirs(workspace_dir, exist_ok=True)
         
         # Dosya yollarını hazırla
         image_paths = [os.path.join(workspace_dir, f"{job_id}_{i}.jpg") for i in range(len(prompts))]
@@ -154,7 +156,7 @@ def process_video_task(topic: str, story_type: str, story_id: int, image_count: 
         
         # İşlem tamam, DB güncelle
         if story_record:
-            story_record.video_path = f"/media/{job_id}_final.mp4"
+            story_record.video_path = f"/media/{story_id}/{job_id}_final.mp4"
             story_record.status_message = "Tamamlandı"
             db.commit()
             
@@ -233,11 +235,21 @@ def get_balance():
 @app.delete("/api/stories/{story_id}")
 def delete_story(story_id: int, db: Session = Depends(get_db)):
     """
-    Belirli bir hikayeyi siler.
+    Belirli bir hikayeyi siler ve ilgili tüm medya klasörünü temizler.
     """
     story = db.query(Story).filter(Story.id == story_id).first()
     if not story:
         return {"error": "Bulunamadı"}
+
+    # İlgili klasörü sil
+    import shutil
+    folder_path = os.path.join("media", str(story_id))
+    if os.path.exists(folder_path):
+        try:
+            shutil.rmtree(folder_path)
+            print(f"Medya klasörü silindi: {folder_path}")
+        except Exception as e:
+            print(f"Klasör silinirken hata oluştu: {e}")
 
     db.delete(story)
     db.commit()
