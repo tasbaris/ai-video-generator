@@ -30,9 +30,9 @@ function App() {
   const fetchBalance = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/balance`);
-      // 1 resim = 0.001 pollen. Bakiye / 0.001 = kalan resim hakkı
+      // 1 resim = 0.0018 pollen. Bakiye / 0.0018 = kalan resim hakkı
       const pollen = res.data.balance || 0;
-      const imagesLeft = Math.floor(pollen / 0.001);
+      const imagesLeft = Math.floor(pollen / 0.0018);
       setImageQuota(imagesLeft);
     } catch (err) {
       console.error("Bakiye yüklenirken hata:", err);
@@ -243,12 +243,12 @@ function App() {
           <div className="p-5 border-t border-gray-800 bg-gray-900/80 shrink-0">
             <div className="flex justify-between items-center text-xs font-bold text-gray-400 mb-3">
               <span className="flex items-center gap-2"><Camera size={14} className="text-blue-500"/> Saatlik Resim Kotası</span>
-              <span className={imageQuota < 20 ? 'text-red-400' : 'text-blue-400'}>{imageQuota} / 150</span>
+              <span className={imageQuota < 10 ? 'text-red-400' : 'text-blue-400'}>{imageQuota} / 83</span>
             </div>
             <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden shadow-inner">
-              <div 
-                className={`h-full transition-all duration-1000 ease-out ${imageQuota < 20 ? 'bg-red-500' : 'bg-blue-500'}`} 
-                style={{ width: `${Math.min(Math.max((imageQuota / 150) * 100, 0), 100)}%` }}
+              <div
+                className={`h-full transition-all duration-1000 ease-out ${imageQuota < 10 ? 'bg-red-500' : 'bg-blue-500'}`}
+                style={{ width: `${Math.min(Math.max((imageQuota / 83) * 100, 0), 100)}%` }}
               ></div>
             </div>
             <p className="text-[10px] text-gray-500 mt-3 text-center flex items-center justify-center gap-1">
