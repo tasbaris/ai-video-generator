@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Loader2, Video, FileText, Download, Plus, History, MessageSquare, Menu, X, Trash2, TrendingUp, RefreshCw, Camera } from 'lucide-react';
+import { Loader2, Video, FileText, Download, Plus, History, MessageSquare, Menu, X, Trash2, TrendingUp, RefreshCw, Camera, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE_URL = 'http://localhost:8000/api';
@@ -473,6 +473,18 @@ function App() {
                       }`}>
                       {videoData?.status === 'completed' ? 'Tamamlandı' : 'Üretiliyor...'}
                     </span>
+                    {videoData?.created_at && (
+                      <span className="flex items-center gap-1.5 text-gray-500 text-xs font-medium bg-gray-100 px-3 py-1 rounded-full">
+                        <Calendar size={12} className="text-gray-400" />
+                        {new Date(videoData.created_at).toLocaleString('tr-TR', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    )}
                     <span className="text-gray-400 text-sm">ID: #{videoData?.id}</span>
                   </div>
                 </div>
@@ -501,8 +513,8 @@ function App() {
                     ) : (
                       <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
                         <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
-                        <h4 className="text-white font-bold mb-2">Video Hazırlanıyor</h4>
-                        <p className="text-gray-500 text-xs">Yapay zeka sahneleri birleştiriyor...</p>
+                        <h4 className="text-white font-bold mb-2">{videoData?.status_message || 'Video Hazırlanıyor'}</h4>
+                        <p className="text-gray-500 text-xs">Yapay zeka sahneleri hazırlıyor...</p>
                       </div>
                     )}
                   </div>
@@ -533,10 +545,10 @@ function App() {
                       <div className="relative z-10">
                         <h4 className="text-xl font-bold mb-2 flex items-center gap-2">
                           <Loader2 className="animate-spin" size={20} />
-                          Optimizasyon Devrede
+                          {videoData?.status_message || 'Optimizasyon Devrede'}
                         </h4>
                         <p className="text-blue-100 leading-relaxed">
-                          Görseller paralel indiriliyor ve seslendirme aynı anda yapılıyor. Yaklaşık 30-40 saniye içinde videon hazır olacak.
+                          Videonuzun her aşaması yapay zeka tarafından titizlikle hazırlanıyor. Yaklaşık 30-40 saniye içinde hazır olacak.
                         </p>
                       </div>
                       <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full -mr-16 -mt-16 blur-3xl opacity-50"></div>

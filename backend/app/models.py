@@ -9,4 +9,5 @@ class Story(Base):
     topic = Column(String, index=True)
     story_text = Column(Text, nullable=True)
     video_path = Column(String, nullable=True)
+    status_message = Column(String, default="Başlatılıyor...")
     created_at = Column(DateTime, default=datetime.utcnow)

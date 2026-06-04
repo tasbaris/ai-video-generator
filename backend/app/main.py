@@ -7,6 +7,7 @@ import os
 import uuid
 import asyncio
 import concurrent.futures
+from datetime import datetime, timezone
 import PIL.Image
 import yt_dlp
 import imageio_ffmpeg
@@ -15,7 +16,7 @@ import imageio_ffmpeg
 if not hasattr(PIL.Image, 'ANTIALIAS'):
     PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
 
-from .database import engine, Base, get_db
+from .database import engine, Base, get_db, SessionLocal
 from .models import Story
 from .services.llm import generate_story_and_prompts
 from .services.image import download_image
@@ -84,20 +85,26 @@ def download_bg_music(story_type: str, output_path: str):
     except Exception as e:
         print(f"Müzik indirme atlandı/hata verdi: {e}")
 
-def process_video_task(topic: str, story_type: str, db: Session, story_id: int, image_count: int = 5, include_bg_music: bool = True):
+def process_video_task(topic: str, story_type: str, story_id: int, image_count: int = 5, include_bg_music: bool = True):
     """
     Arka planda çalışacak ana video üretim orkestrasyonu
     """
+    db = SessionLocal()
     try:
         # 1. Hikaye ve Prompt Üretimi
+        story_record = db.query(Story).filter(Story.id == story_id).first()
+        if story_record:
+            story_record.status_message = "Hikaye ve görsel taslakları oluşturuluyor..."
+            db.commit()
+
         llm_result = generate_story_and_prompts(topic, story_type, image_count)
         story_text = llm_result["story"]
         prompts = llm_result["prompts"]
         
         # Veritabanını güncelle
-        story_record = db.query(Story).filter(Story.id == story_id).first()
         if story_record:
             story_record.story_text = story_text
+            story_record.status_message = "Görseller, ses ve müzik hazırlanıyor..."
             db.commit()
             
         job_id = str(uuid.uuid4())
@@ -137,6 +144,9 @@ def process_video_task(topic: str, story_type: str, db: Session, story_id: int, 
             loop.run_until_complete(run_assets_parallel())
 
         print("Varlıklar hazır. Video birleştirme başlıyor...")
+        if story_record:
+            story_record.status_message = "Görseller ve altyazılar videoya gömülüyor..."
+            db.commit()
         
         # 4. Video, Efekt ve Altyazı Birleştirme
         output_mp4 = os.path.join(workspace_dir, f"{job_id}_final.mp4")
@@ -145,11 +155,16 @@ def process_video_task(topic: str, story_type: str, db: Session, story_id: int, 
         # İşlem tamam, DB güncelle
         if story_record:
             story_record.video_path = f"/media/{job_id}_final.mp4"
+            story_record.status_message = "Tamamlandı"
             db.commit()
             
     except Exception as e:
         print(f"Video oluşturma hatası: {e}")
-        pass
+        if 'story_record' in locals() and story_record:
+            story_record.status_message = f"Hata: {str(e)}"
+            db.commit()
+    finally:
+        db.close()
 
 @app.post("/api/generate")
 def generate_video(request: VideoRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
@@ -165,7 +180,6 @@ def generate_video(request: VideoRequest, background_tasks: BackgroundTasks, db:
         process_video_task, 
         request.topic, 
         request.story_type, 
-        db, 
         new_story.id, 
         request.image_count, 
         request.include_bg_music
@@ -245,7 +259,9 @@ def get_status(story_id: int, db: Session = Depends(get_db)):
         "topic": story.topic,
         "story_text": story.story_text,
         "status": status,
-        "video_url": story.video_path
+        "status_message": story.status_message,
+        "video_url": story.video_path,
+        "created_at": story.created_at.replace(tzinfo=timezone.utc) if story.created_at else None
     }
 
 if __name__ == "__main__":
